@@ -109,7 +109,9 @@ bool DynamoDBManager::storeFileLocation(const std::string& tableName,
     // Set up expression attribute values
     Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue> expressionAttributeValues;
     Aws::DynamoDB::Model::AttributeValue s3KeyValue;
-    s3KeyValue.AddSS(s3Key);
+    Aws::Vector<Aws::String> stringSet;
+    stringSet.push_back(s3Key.c_str());
+    s3KeyValue.SetSS(stringSet);
     expressionAttributeValues[":s3key"] = s3KeyValue;
     
     updateItemRequest.SetTableName(tableName);

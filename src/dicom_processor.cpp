@@ -10,6 +10,29 @@
 #include <sstream>
 #include <algorithm>
 
+DcmTagKey parseTagKey(const std::string& tagStr) {
+    // Expected format: "gggg,eeee" where g is group and e is element
+    size_t commaPos = tagStr.find(',');
+    if (commaPos == std::string::npos) {
+        LOG_ERROR("Invalid DICOM tag format: " + tagStr);
+        return DCM_UndefinedTagKey;
+    }
+    
+    try {
+        std::string groupStr = tagStr.substr(0, commaPos);
+        std::string elemStr = tagStr.substr(commaPos + 1);
+        
+        // Parse hexadecimal values
+        Uint16 group = static_cast<Uint16>(std::stoi(groupStr, nullptr, 16));
+        Uint16 elem = static_cast<Uint16>(std::stoi(elemStr, nullptr, 16));
+        
+        return DcmTagKey(group, elem);
+    } catch (const std::exception& e) {
+        LOG_ERROR("Failed to parse DICOM tag: " + tagStr + " - " + e.what());
+        return DCM_UndefinedTagKey;
+    }
+}
+
 DicomProcessor::DicomProcessor() {
     // Initialize DCMTK if needed
 }
@@ -38,8 +61,7 @@ bool DicomProcessor::extractMetadata(const std::string& filepath, Json::Value& m
                 const std::string& tagID = tag.second;
                 
                 OFString value;
-                DcmTagKey dcmTagKey;
-                dcmTagKey.set(tagID.c_str());
+                DcmTagKey dcmTagKey = parseTagKey(tagID);
                 
                 if (dataset->findAndGetOFString(dcmTagKey, value).good()) {
                     metadata[tagName] = std::string(value.c_str());
@@ -131,8 +153,7 @@ std::string DicomProcessor::extractTag(const std::string& filepath, const std::s
     if (status.good()) {
         DcmDataset* dataset = fileformat.getDataset();
         OFString value;
-        DcmTagKey dcmTagKey;
-        dcmTagKey.set(tag.c_str());
+        DcmTagKey dcmTagKey = parseTagKey(tag);
         
         if (dataset->findAndGetOFString(dcmTagKey, value).good()) {
             return std::string(value.c_str());

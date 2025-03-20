@@ -84,11 +84,11 @@ bool S3Manager::uploadFile(const std::string& bucketName,
     }
     
     Aws::S3::Model::PutObjectRequest putObjectRequest;
-    putObjectRequest.WithBucket(bucketName)
-                     .WithKey(s3Key)
-                     .WithBody(inputData)
-                     .WithContentLength(fileSize)
-                     .WithServerSideEncryption(Aws::S3::Model::ServerSideEncryption::AES256);
+    putObjectRequest.SetBucket(bucketName);
+    putObjectRequest.SetKey(s3Key);
+    putObjectRequest.SetBody(inputData);
+    putObjectRequest.SetContentLength(static_cast<long>(fileSize));
+    putObjectRequest.WithServerSideEncryption(Aws::S3::Model::ServerSideEncryption::AES256);
     
     LOG_INFO("Uploading file: " + localFilePath + " to S3://" + bucketName + "/" + s3Key);
     

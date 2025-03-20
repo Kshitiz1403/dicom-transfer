@@ -1,8 +1,8 @@
 # DICOM Transfer Utility Makefile
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -pthread
-LDFLAGS = -ldcmdata -ldcmimgle -laws-cpp-sdk-s3 -laws-cpp-sdk-dynamodb -laws-cpp-sdk-core -ljsoncpp
+CXXFLAGS = -std=c++17 -Wall -Wextra -pthread -I/usr/include/jsoncpp -I/usr/local/include
+LDFLAGS = -ldcmdata -ldcmimgle -laws-cpp-sdk-s3 -laws-cpp-sdk-dynamodb -laws-cpp-sdk-core -ljsoncpp -L/usr/local/lib
 
 # Source files
 SRCS = src/main.cpp \
