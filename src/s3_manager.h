@@ -7,7 +7,7 @@
 
 class S3Manager {
 public:
-    S3Manager(const std::string& region = "us-east-1");
+    S3Manager(const std::string& region = "ap-south-1");
     ~S3Manager();
     
     // Initialize AWS SDK

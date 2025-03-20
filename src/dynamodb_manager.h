@@ -9,7 +9,7 @@
 
 class DynamoDBManager {
 public:
-    DynamoDBManager(const std::string& region = "us-east-1");
+    DynamoDBManager(const std::string& region = "ap-south-1");
     ~DynamoDBManager();
     
     // Store study metadata in DynamoDB

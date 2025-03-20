@@ -34,3 +34,15 @@ sudo make install
 
 echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
+
+
+sudo apt install -y awscli
+aws configure
+
+
+aws s3api create-bucket --bucket dicom-transfer-bucket --region ap-south-1
+
+
+export AWS_ACCESS_KEY_ID=AKIAW3MEA2XTBCRVQTOA
+export AWS_SECRET_ACCESS_KEY=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
+export AWS_DEFAULT_REGION=ap-south-1

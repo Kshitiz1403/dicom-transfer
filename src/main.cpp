@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 // AWS S3 bucket and DynamoDB table names
 const std::string S3_BUCKET_NAME = "dicom-transfer-bucket";
 const std::string DYNAMODB_TABLE_NAME = "dicom-studies";
-const std::string AWS_REGION = "us-east-1";
+const std::string AWS_REGION = "ap-south-1";
 
 // Forward declarations
 bool uploadMode(const std::string& sourcePath, int threadCount);
