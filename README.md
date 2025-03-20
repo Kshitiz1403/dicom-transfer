@@ -46,3 +46,7 @@ aws s3api create-bucket --bucket dicom-transfer-bucket --region ap-south-1
 export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
 export AWS_DEFAULT_REGION=ap-south-1
+
+./dicom_transfer --upload sample-dicom-files --verbose --threads 3
+
+./dicom_transfer --download "1.3.12.2.1107.5.4.3.4975316777216.19951114.94101.16" --output temp
