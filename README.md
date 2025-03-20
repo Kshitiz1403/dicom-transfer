@@ -45,4 +45,4 @@ aws s3api create-bucket --bucket dicom-transfer-bucket --region ap-south-1
 
 export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
-export AWS_DEFAULT_REGION=us-east-1
+export AWS_DEFAULT_REGION=ap-south-1
