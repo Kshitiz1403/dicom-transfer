@@ -25,7 +25,15 @@ ThreadPool::ThreadPool(size_t numThreads) : stop(false), active_threads(0) {
                 }
                 
                 // Execute the task
+                {
+                    std::unique_lock<std::mutex> lock(count_mutex);
+                    active_threads++;
+                }
                 task();
+                {
+                    std::unique_lock<std::mutex> lock(count_mutex);
+                    active_threads--;
+                }
             }
         });
     }
