@@ -12,7 +12,8 @@ DynamoDBManager::DynamoDBManager(const std::string& region) {
     Aws::Client::ClientConfiguration clientConfig;
     clientConfig.region = region;
     
-    m_dynamoClient = Aws::DynamoDB::DynamoDBClient(clientConfig);
+    // Use placement new to initialize the member directly
+    new (&m_dynamoClient) Aws::DynamoDB::DynamoDBClient(clientConfig);
     
     LOG_INFO("DynamoDBManager initialized with region: " + region);
 }
