@@ -14,6 +14,7 @@
 #include <mutex>
 #include <map>
 #include <filesystem>
+#include <fstream>
 
 namespace fs = std::filesystem;
 
@@ -193,11 +194,20 @@ bool downloadMode(const std::string& studyUid, const std::string& outputPath, in
     LOG_INFO("Output path: " + outputPath);
     LOG_INFO("Using " + std::to_string(threadCount) + " threads");
     
-    // Create output directory if it doesn't exist
+    // Create base output directory if it doesn't exist
     if (!Utils::createDirectoryIfNotExists(outputPath)) {
         LOG_ERROR("Failed to create output directory: " + outputPath);
         return false;
     }
+    
+    // Create study-specific directory
+    std::string studyPath = Utils::joinPath(outputPath, studyUid);
+    if (!Utils::createDirectoryIfNotExists(studyPath)) {
+        LOG_ERROR("Failed to create study directory: " + studyPath);
+        return false;
+    }
+    
+    LOG_INFO("Created study directory: " + studyPath);
     
     // Create instances of required services
     S3Manager s3Manager(AWS_REGION);
@@ -212,6 +222,20 @@ bool downloadMode(const std::string& studyUid, const std::string& outputPath, in
     }
     
     LOG_INFO("Retrieved metadata for study: " + studyUid);
+    
+    // Save metadata to JSON file in study directory
+    std::string metadataPath = Utils::joinPath(studyPath, "study_metadata.json");
+    std::ofstream metadataFile(metadataPath);
+    if (!metadataFile.is_open()) {
+        LOG_ERROR("Failed to create metadata file: " + metadataPath);
+        return false;
+    }
+    
+    Json::StyledWriter writer;
+    metadataFile << writer.write(studyMetadata);
+    metadataFile.close();
+    
+    LOG_INFO("Saved study metadata to: " + metadataPath);
     
     // Get all file locations for the study
     std::vector<std::string> fileLocations = dbManager.getFileLocations(DYNAMODB_TABLE_NAME, studyUid);
@@ -229,9 +253,9 @@ bool downloadMode(const std::string& studyUid, const std::string& outputPath, in
     for (const auto& s3Key : fileLocations) {
         downloadResults.push_back(
             threadPool.enqueue([&, s3Key]() {
-                // Generate local file path
+                // Generate local file path in study directory
                 std::string filename = Utils::getFileName(s3Key);
-                std::string localFilePath = Utils::joinPath(outputPath, filename);
+                std::string localFilePath = Utils::joinPath(studyPath, filename);
                 
                 // Download the file from S3
                 Profiler::getInstance().startOperation("S3 Download");
