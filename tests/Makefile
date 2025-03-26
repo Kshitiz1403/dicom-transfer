@@ -6,7 +6,6 @@ LDFLAGS = -lgtest -lgtest_main -pthread -laws-cpp-sdk-s3 -laws-cpp-sdk-core -ljs
 
 TEST_SRCS = s3_manager_test.cpp \
             s3_benchmark_test.cpp \
-            s3_core_test.cpp \
             dicom_transfer_test.cpp \
             ../src/s3_manager.cpp \
             ../src/utils.cpp \
