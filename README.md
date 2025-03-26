@@ -36,6 +36,12 @@ echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 
 
+sudo apt-get install libgtest-dev
+cd /usr/src/gtest
+sudo cmake CMakeLists.txt
+sudo make
+sudo cp lib/*.a /usr/lib
+
 sudo apt install -y awscli
 aws configure
 
@@ -50,3 +56,33 @@ export AWS_DEFAULT_REGION=ap-south-1
 ./dicom_transfer --upload sample-dicom-files --verbose --threads 3
 
 ./dicom_transfer --download "1.3.12.2.1107.5.4.3.4975316777216.19951114.94101.16" --output temp
+
+
+# Running test cases
+
+1. change directory to `tests` - 
+```sh
+cd tests
+```
+2. Run the following command - 
+```sh
+# Build and run the tests
+make
+```
+
+
+## Run all test cases - 
+1. Run the following command
+```sh
+make test
+```
+
+## To run a specific test
+```sh
+./run_tests --gtest_filter=S3ManagerTest.SuccessfulUpload
+```
+
+## To run a specific test with verbose output
+```sh
+./run_tests --gtest_filter=S3ManagerTest.* --gtest_output=verbose
+```
