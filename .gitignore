@@ -2,3 +2,4 @@
 tests/test_dicom_files
 *.log
 temp/
+sample-dicom-files/
