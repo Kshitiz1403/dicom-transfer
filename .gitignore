@@ -1,1 +1,4 @@
 *.o
+tests/test_dicom_files
+*.log
+temp/
