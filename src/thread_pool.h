@@ -9,79 +9,60 @@
 #include <future>
 
 class ThreadPool {
+private:
+    // Order members by initialization order
+    bool stop;
+    size_t active_threads;
+    size_t maxQueueSize;
+    std::vector<std::thread> workers;
+    std::queue<std::function<void()>> tasks;
+    mutable std::mutex queue_mutex;
+    mutable std::mutex count_mutex;
+    std::condition_variable condition;
+
 public:
-    ThreadPool(size_t numThreads);
+    explicit ThreadPool(size_t threads, size_t maxQueueSize = 1000);
     ~ThreadPool();
-    
-    // Add a task to the pool and get a future for its result
+
+    // Delete copy constructor and assignment operator
+    ThreadPool(const ThreadPool&) = delete;
+    ThreadPool& operator=(const ThreadPool&) = delete;
+
     template<class F, class... Args>
     auto enqueue(F&& f, Args&&... args) 
-        -> std::future<typename std::invoke_result<F, Args...>::type>;
-    
-    // Get the number of active threads
+        -> std::future<typename std::result_of<F(Args...)>::type>;
+
+    // Thread pool status methods
     size_t getActiveThreadCount() const;
-    
-    // Get the total number of threads in the pool
     size_t getTotalThreadCount() const;
-    
-    // Get the current queue size
     size_t getQueueSize() const;
-    
-private:
-    // Worker threads
-    std::vector<std::thread> workers;
-    
-    // Task queue
-    std::queue<std::function<void()>> tasks;
-    
-    // Synchronization
-    mutable std::mutex queue_mutex;
-    std::condition_variable condition;
-    
-    // Thread pool state
-    bool stop;
-    
-    // Track active threads
-    mutable std::mutex count_mutex;
-    size_t active_threads;
 };
 
-// Template implementation in header
+// Template method implementation (must be in header)
 template<class F, class... Args>
 auto ThreadPool::enqueue(F&& f, Args&&... args) 
-    -> std::future<typename std::invoke_result<F, Args...>::type> {
-    
-    using return_type = typename std::invoke_result<F, Args...>::type;
-    
+    -> std::future<typename std::result_of<F(Args...)>::type> {
+    using return_type = typename std::result_of<F(Args...)>::type;
+
     auto task = std::make_shared<std::packaged_task<return_type()>>(
         std::bind(std::forward<F>(f), std::forward<Args>(args)...)
     );
     
-    std::future<return_type> result = task->get_future();
-    
+    std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         
-        // Don't allow enqueueing after stopping the pool
-        if (stop) {
+        // Wait if queue is full
+        condition.wait(lock, [this] { 
+            return tasks.size() < maxQueueSize || stop; 
+        });
+        
+        if(stop) {
             throw std::runtime_error("enqueue on stopped ThreadPool");
         }
-        
-        tasks.emplace([task, this]() {
-            {
-                std::unique_lock<std::mutex> lock(count_mutex);
-                active_threads++;
-            }
-            
-            (*task)();
-            
-            {
-                std::unique_lock<std::mutex> lock(count_mutex);
-                active_threads--;
-            }
-        });
+
+        tasks.emplace([task](){ (*task)(); });
     }
-    
     condition.notify_one();
-    return result;
+    return res;
 } 
